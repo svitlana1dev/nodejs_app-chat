@@ -7,11 +7,23 @@ require("dotenv").config();
 const PORT = process.env.PORT;
 const HOST = process.env.HOST;
 
+const MIME_TYPES = {
+  default: "text/plain",
+  html: "text/html; charset=UTF-8",
+  js: "application/javascript",
+  css: "text/css",
+};
+
 const server = http.createServer((req, res) => {
   const filePath = path.join(__dirname, "public", req.url);
 
   fs.stat(filePath, (err, stats) => {
     if (!err && stats.isFile()) {
+      const extension = path.extname(filePath).slice(1).replace(".", "");
+
+      res.writeHead(200, {
+        "Content-Type": MIME_TYPES[extension] || MIME_TYPES.default,
+      });
       fs.createReadStream(filePath).pipe(res);
     } else {
       res.writeHead(404, { "Content-Type": "text/plain" });
